@@ -2,9 +2,10 @@
 import eslint from "@eslint/js";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 import globals from "globals";
+import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
 
-export default tseslint.config(
+export default defineConfig([
   {
     ignores: ["eslint.config.mjs"],
   },
@@ -15,7 +16,14 @@ export default tseslint.config(
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.jest,
+        describe: "readonly",
+        it: "readonly",
+        expect: "readonly",
+        beforeEach: "readonly",
+        afterEach: "readonly",
+        beforeAll: "readonly",
+        afterAll: "readonly",
+        vi: "readonly",
       },
       sourceType: "commonjs",
       parserOptions: {
@@ -44,4 +52,4 @@ export default tseslint.config(
       ],
     },
   },
-);
+]);

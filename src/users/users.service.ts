@@ -1,5 +1,6 @@
 import {
 	ConflictException,
+	ForbiddenException,
 	Injectable,
 	NotFoundException,
 	UnauthorizedException
@@ -10,6 +11,7 @@ import { Prisma } from "@prisma/client"
 import * as bcrypt from "bcrypt"
 import { JwtService } from "@nestjs/jwt"
 import { LoginUserDto } from "./dto/login-user.dto"
+import type { JwtPayload } from "./types/jwt-payload"
 
 @Injectable()
 export class UsersService {
@@ -56,7 +58,8 @@ export class UsersService {
 		}
 		const accessToken = await this.jwt.signAsync({
 			sub: user.id,
-			email: user.email
+			email: user.email,
+			role: user.role
 		})
 		return { accessToken }
 	}
@@ -72,5 +75,20 @@ export class UsersService {
 		}
 
 		return user
+	}
+
+	async deleteUser(targetId: string, requester: JwtPayload) {
+		const isSelf = requester.sub === targetId
+		const isAdmin = requester.role === "ADMIN"
+
+		if (!isSelf && !isAdmin) {
+			throw new ForbiddenException("You can only delete your own account")
+		}
+
+		await this.prisma.user.delete({
+			where: { id: targetId }
+		})
+
+		return { message: "User deleted successfully" }
 	}
 }
